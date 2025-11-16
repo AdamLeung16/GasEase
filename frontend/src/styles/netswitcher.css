@@ -1,0 +1,57 @@
+/* 网络切换器组件样式 */
+.network-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.network-status {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.network-status-supported {
+  background-color: rgb(220 252 231);
+  color: rgb(22 101 52);
+}
+
+.network-status-unsupported {
+  background-color: rgb(254 226 226);
+  color: rgb(153 27 27);
+}
+
+.network-select {
+  font-size: 0.875rem;
+  border: 1px solid rgb(209 213 219);
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.network-select:focus {
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);
+  border-color: rgb(99 102 241);
+}
+
+/* 下拉选项样式 */
+.network-select option {
+  padding: 0.5rem;
+  font-size: 0.875rem;
+}
+
+/* 响应式设计 */
+@media (max-width: 640px) {
+  .network-container {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+  
+  .network-select {
+    width: 100%;
+  }
+}

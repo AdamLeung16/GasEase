@@ -1,0 +1,101 @@
+/* 连接钱包组件样式 */
+.wallet-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.wallet-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: rgb(75 85 99);
+}
+
+.wallet-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.wallet-address {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.disconnect-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  color: rgb(75 85 99);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.disconnect-btn:hover {
+  color: rgb(31 41 55);
+}
+
+.connectors-container {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.connect-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  transition: all 0.3s;
+  outline: none;
+  transform: scale(1);
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  background: linear-gradient(to right, #6366f1, #8b5cf6);
+  color: white;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.connect-btn:focus {
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.5);
+}
+
+.connect-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.connect-btn:hover:not(:disabled) {
+  transform: scale(1.05);
+  background: linear-gradient(to right, #4f46e5, #7c3aed);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.connect-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+/* 响应式设计 */
+@media (max-width: 640px) {
+  .wallet-container {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  
+  .connectors-container {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .connect-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
