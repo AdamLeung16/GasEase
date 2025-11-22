@@ -1,6 +1,7 @@
 import { useAccount } from 'wagmi'
 import { ConnectWallet } from './components/wallet/ConnectWallet'
 import { NetworkSwitcher } from './components/wallet/NetworkSwitcher'
+import { TokenBalances } from './components/wallet/TokenBalances'
 import { TransferForm } from './components/transaction/TransferForm'
 import { TransactionHistory } from './components/transaction/TransactionHistory'
 import { RelayerStatus } from './components/RelayerStatus'
@@ -31,7 +32,7 @@ function App() {
         {!isConnected ? (
           // 未连接钱包的欢迎页面
           <div className="welcome-container">
-            <img src="../../public/vite.png" className='logo'></img>
+            <img src="vite.png" className='logo'></img>
             {/* <h2 className="welcome-title">
               GasEase
             </h2> */}
@@ -91,6 +92,7 @@ function App() {
 
               {/* 右侧边栏 */}
               <div className="sidebar-section">
+                <TokenBalances />
                 <RelayerStatus />
                 <TransactionHistory />
               </div>
