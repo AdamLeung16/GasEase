@@ -53,7 +53,7 @@ export async function relayTransfer(req, res) {
     }
 
     console.log('✅ Signature verified');
-
+    console.log(signature)
     // 执行转账
     const transactionHash = await executeTransfer({
       owner,

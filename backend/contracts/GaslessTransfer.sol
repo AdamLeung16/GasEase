@@ -51,7 +51,7 @@ contract GaslessTransfer is EIP712 {
         bytes32 s
     ) external {
         // 使用EIP-2612 permit进行授权
-        IERC20Permit(token).permit(owner, spender, value, deadline, v, r, s);
+        IERC20Permit(token).permit(owner, address(this), value, deadline, v, r, s);
         
         // 从owner转账到spender
         bool success = IERC20(token).transferFrom(owner, spender, value);

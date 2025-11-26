@@ -7,7 +7,10 @@ import { getProvider, getRelayerWallet } from './blockchainService.js';
 export async function verifySignature({ owner, spender, value, deadline, tokenAddress, signature }) {
   try {
     const provider = getProvider();
-    
+    const gaslessContractAddress = process.env.GASLESS_TRANSFER_CONTRACT_ADDRESS;
+    if (!gaslessContractAddress) {
+      throw new Error('GASLESS_TRANSFER_CONTRACT_ADDRESS environment variable is not set');
+    }
     // 获取代币合约的域分隔符
     const tokenContract = new ethers.Contract(tokenAddress, [
       "function name() view returns (string)",
@@ -19,7 +22,7 @@ export async function verifySignature({ owner, spender, value, deadline, tokenAd
     // 构建 EIP-2612 Permit 类型数据
     const domain = {
       name: await tokenContract.name(),
-      version: '1',
+      version: "2",
       chainId: Number((await provider.getNetwork()).chainId),
       verifyingContract: tokenAddress
     };
@@ -35,14 +38,14 @@ export async function verifySignature({ owner, spender, value, deadline, tokenAd
 
     const valueData = {
       owner,
-      spender,
-      value: ethers.parseUnits(value.toString(), 18).toString(),
+      spender: gaslessContractAddress,
+      value: ethers.parseUnits(value.toString(), 6).toString(),
       nonce: nonce.toString(),
       deadline: deadline.toString()
     };
     // console.log(domain)
     // console.log(types)
-    // console.log(valueData)
+    console.log(valueData)
     // 验证签名
     const recoveredAddress = ethers.verifyTypedData(domain, types, valueData, signature);
     // console.log(recoveredAddress);
@@ -80,7 +83,7 @@ export async function executeTransfer({ owner, spender, value, deadline, tokenAd
 
     const gaslessContract = new ethers.Contract(gaslessContractAddress, contractABI, signer);
     
-    const valueWei = ethers.parseUnits(value.toString(), 18);
+    const valueWei = ethers.parseUnits(value.toString(), 6);
     
     console.log(owner);
     console.log(spender);

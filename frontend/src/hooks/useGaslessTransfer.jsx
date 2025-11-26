@@ -38,7 +38,7 @@ export function useGaslessTransfer() {
       // 2. 准备 EIP-2612 Permit 结构化数据
       const domain = {
         name: tokenName,
-        version: '1',
+        version: '2',
         chainId: 11155111, // Sepolia
         verifyingContract: tokenAddress  // 使用代币合约地址
       }
@@ -56,8 +56,8 @@ export function useGaslessTransfer() {
       const deadline = Math.floor(Date.now() / 1000) + 3600 // 1小时后过期
       const valueData = {
         owner,
-        spender, // spender 是 GaslessTransfer 合约
-        value: ethers.parseUnits(value.toString(), 18).toString(),
+        spender: gaslessTransferContractAddress, // spender 是 GaslessTransfer 合约
+        value: ethers.parseUnits(value.toString(), 6).toString(),
         nonce: nonce.toString(),
         deadline
       }
