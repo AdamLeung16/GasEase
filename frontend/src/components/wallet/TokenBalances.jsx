@@ -31,7 +31,7 @@ export function TokenBalances() {
           <AlertCircle className="network-unsupported-icon" />
           <div>
             <div className="network-unsupported-title">不支持的网络</div>
-            <div className="network-unsupported-subtitle">请在 Sepolia 或 Polygon Amoy 测试网使用</div>
+            <div className="network-unsupported-subtitle">请在 Sepolia 测试网使用</div>
           </div>
         </div>
       </div>

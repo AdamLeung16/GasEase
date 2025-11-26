@@ -1,3 +1,5 @@
+// GasEase/frontend/src/components/transaction/TransferForm.jsx
+
 import { useState } from 'react'
 import { useAccount } from 'wagmi'
 import { Send, Zap } from 'lucide-react'
@@ -7,21 +9,11 @@ import { LoadingSpinner } from '../ui/LoadingSpinner'
 import '../../styles/transaction.css'
 
 const TOKENS = [
-//   { 
-//     symbol: 'GUSD', 
-//     name: 'Gasless USD', 
-//     address: import.meta.env.VITE_GUSD_TOKEN_ADDRESS || '0xYourGUSDTokenAddress' 
-//   },
   { 
     symbol: 'USDC', 
     name: 'USD Coin', 
-    address: import.meta.env.VITE_USDC_TOKEN_ADDRESS || '0xYourUSDCTokenAddress' 
-  },
-//   { 
-//     symbol: 'DAI', 
-//     name: 'Dai Stablecoin', 
-//     address: import.meta.env.VITE_DAI_TOKEN_ADDRESS || '0xYourDAITokenAddress' 
-//   },
+    address: import.meta.env.VITE_USDC_TOKEN_ADDRESS
+  }
 ]
 
 export function TransferForm() {
@@ -29,7 +21,7 @@ export function TransferForm() {
   const { transfer, isPending, error, lastTransaction } = useGaslessTransfer()
   
   const [formData, setFormData] = useState({
-    to: '',
+    spender: '',  // 从 to 改为 spender
     amount: '',
     token: TOKENS[0].symbol
   })
@@ -43,14 +35,14 @@ export function TransferForm() {
     
     try {
       await transfer({
-        from: address,
-        to: formData.to,
-        amount: formData.amount,
+        owner: address,        // 从 from 改为 owner
+        spender: formData.spender, // 从 to 改为 spender
+        value: formData.amount,    // 从 amount 改为 value
         tokenAddress: token.address
       })
       
       // 成功后可清空表单
-      setFormData(prev => ({ ...prev, to: '', amount: '' }))
+      setFormData(prev => ({ ...prev, spender: '', amount: '' }))
     } catch (err) {
       // 错误由 hook 处理
       console.error('Transfer failed:', err)
@@ -92,8 +84,8 @@ export function TransferForm() {
           </label>
           <input
             type="text"
-            value={formData.to}
-            onChange={(e) => handleChange('to', e.target.value)}
+            value={formData.spender}  // 从 to 改为 spender
+            onChange={(e) => handleChange('spender', e.target.value)}  // 从 to 改为 spender
             placeholder="0x742d35Cc6634C0532925a3b8D..."
             className="form-input"
             required
@@ -161,7 +153,7 @@ export function TransferForm() {
         {/* 提交按钮 */}
         <button
           type="submit"
-          disabled={isPending || !formData.to || !formData.amount}
+          disabled={isPending || !formData.spender || !formData.amount}  // 从 to 改为 spender
           className="submit-button"
         >
           {isPending ? (

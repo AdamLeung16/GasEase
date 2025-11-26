@@ -1,10 +1,9 @@
 import { useAccount, useSwitchChain } from 'wagmi'
-import { sepolia, polygonAmoy } from 'wagmi/chains'
+import { sepolia } from 'wagmi/chains'
 import '../../styles/netswitcher.css'
 
 const SUPPORTED_CHAINS = [
-  { id: sepolia.id, name: 'Sepolia', testnet: true },
-  { id: polygonAmoy.id, name: 'Polygon Amoy', testnet: true },
+  { id: sepolia.id, name: 'Sepolia', testnet: true }
 ]
 
 export function NetworkSwitcher() {

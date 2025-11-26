@@ -10,47 +10,68 @@ export function useGaslessTransfer() {
   const { address } = useAccount()
   const { signTypedDataAsync } = useSignTypedData()
 
-  const transfer = async ({ from, to, amount, tokenAddress }) => {
+  const transfer = async ({ owner, spender, value, tokenAddress }) => {
     setIsPending(true)
     setError(null)
     setLastTransaction(null)
 
     try {
-      // 1. 准备 EIP-712 结构化数据
+      // 获取 GaslessTransfer 合约地址（从环境变量或配置）
+      const gaslessTransferContractAddress = import.meta.env.VITE_GASLESS_TRANSFER_CONTRACT_ADDRESS
+      
+      if (!gaslessTransferContractAddress) {
+        throw new Error('GaslessTransfer 合约地址未配置')
+      }
+
+      // 1. 获取代币信息（name, version, nonce）
+      const provider = new ethers.BrowserProvider(window.ethereum)
+      const tokenContract = new ethers.Contract(tokenAddress, [
+        "function name() view returns (string)",
+        "function nonces(address owner) view returns (uint256)"
+      ], provider)
+
+      const [tokenName, nonce] = await Promise.all([
+        tokenContract.name(),
+        tokenContract.nonces(owner)
+      ])
+
+      // 2. 准备 EIP-2612 Permit 结构化数据
       const domain = {
-        name: 'GaslessCheckout',
+        name: tokenName,
         version: '1',
         chainId: 11155111, // Sepolia
-        verifyingContract: tokenAddress
+        verifyingContract: tokenAddress  // 使用代币合约地址
       }
 
       const types = {
-        Transfer: [
-          { name: 'from', type: 'address' },
-          { name: 'to', type: 'address' },
-          { name: 'amount', type: 'uint256' },
+        Permit: [
+          { name: 'owner', type: 'address' },
+          { name: 'spender', type: 'address' },
+          { name: 'value', type: 'uint256' },
+          { name: 'nonce', type: 'uint256' },
           { name: 'deadline', type: 'uint256' }
         ]
       }
 
       const deadline = Math.floor(Date.now() / 1000) + 3600 // 1小时后过期
-      const value = {
-        from,
-        to,
-        amount: ethers.parseUnits(amount.toString(), 18).toString(),
+      const valueData = {
+        owner,
+        spender, // spender 是 GaslessTransfer 合约
+        value: ethers.parseUnits(value.toString(), 18).toString(),
+        nonce: nonce.toString(),
         deadline
       }
 
-      // 2. 请求用户签名
+      // 3. 请求用户签名
       console.log('请求用户签名...')
       const signature = await signTypedDataAsync({
         domain,
         types,
-        primaryType: 'Transfer',
-        message: value
+        primaryType: 'Permit',
+        message: valueData
       })
 
-      // 3. 发送到中继服务
+      // 4. 发送到中继服务（调用我们的 GaslessTransfer 合约）
       console.log('发送到中继服务...')
       const relayApiUrl = import.meta.env.VITE_RELAY_API_URL || 'http://localhost:3001/api'
       const response = await fetch(`${relayApiUrl}/relay/transfer`, {
@@ -59,9 +80,9 @@ export function useGaslessTransfer() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          from,
-          to,
-          amount,
+          owner,
+          spender,
+          value,
           signature,
           deadline,
           tokenAddress
@@ -74,7 +95,7 @@ export function useGaslessTransfer() {
         throw new Error(result.error || `HTTP error! status: ${response.status}`)
       }
 
-      // 4. 设置交易结果
+      // 5. 设置交易结果
       setLastTransaction({
         hash: result.transactionHash,
         status: 'success',

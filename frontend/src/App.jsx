@@ -48,7 +48,7 @@ function App() {
               {[
                 { icon: '🚀', title: 'Completely Free', desc: 'Gas fees are fully sponsored' },
                 { icon: '⚡', title: 'Instant Transactions', desc: 'Powered by streamlined meta-transactions' },
-                { icon: '🔒', title: 'Secure & Reliable', desc: 'Built on EIP-2612 & EIP-2771 standards' }
+                { icon: '🔒', title: 'Secure & Reliable', desc: 'Built on EIP-712 standards' }
               ].map((feature, index) => (
                 <div key={index} className="feature-card">
                   <div className="feature-icon">{feature.icon}</div>

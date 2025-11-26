@@ -13,9 +13,6 @@ const ERC20_ABI = [
 const TOKEN_ADDRESSES = {
   sepolia: {
     USDC: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238' // Sepolia USDC
-  },
-  polygonAmoy: {
-    USDC: '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582' // Polygon Amoy USDC
   }
 }
 
@@ -102,8 +99,7 @@ export function useTokenBalance(tokenSymbol = 'USDC') {
 // 根据链ID和代币符号获取地址
 function getTokenAddress(chainId, tokenSymbol) {
   const chainMap = {
-    11155111: 'sepolia',    // Sepolia
-    80002: 'polygonAmoy'    // Polygon Amoy
+    11155111: 'sepolia'    // Sepolia
   }
   
   const chainName = chainMap[chainId]
