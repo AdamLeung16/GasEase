@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/Users/adam/hkust/blockchain/GasEase/backend/contracts/GaslessTransfer.sol": {
-      "lastModificationDate": 1764149308223,
-      "contentHash": "305185adfe78a9f9b28cf39da5cc6280",
+      "lastModificationDate": 1764279835409,
+      "contentHash": "c21979a5db103dba6d95a1e2e6b277ea",
       "sourceName": "contracts/GaslessTransfer.sol",
       "solcConfig": {
         "version": "0.8.20",

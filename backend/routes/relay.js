@@ -1,4 +1,4 @@
-import { verifySignature, executeTransfer } from '../services/transferService.js';
+import { verifySignature_user2contract, verifySignature_user2target, executeTransfer } from '../services/transferService.js';
 
 /**
  * 中继转账端点
@@ -6,18 +6,18 @@ import { verifySignature, executeTransfer } from '../services/transferService.js
  */
 export async function relayTransfer(req, res) {
   try {
-    const { owner, spender, value, signature, deadline, tokenAddress } = req.body;
+    const { owner, recipient, value, signature_user2contract, signature_user2target, deadline, tokenAddress } = req.body;
 
     // 验证必需字段
-    if (!owner || !spender || !value || !signature || !deadline || !tokenAddress) {
+    if (!owner || !recipient || !value || !signature_user2contract || !signature_user2target || !deadline || !tokenAddress) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required fields: owner, spender, value, signature, deadline, tokenAddress'
+        error: 'Missing required fields: owner, recipient, value, signature_user2contract, signature_user2target, deadline, tokenAddress'
       });
     }
 
     // 验证地址格式
-    if (!/^0x[a-fA-F0-9]{40}$/.test(owner) || !/^0x[a-fA-F0-9]{40}$/.test(spender) || !/^0x[a-fA-F0-9]{40}$/.test(tokenAddress)) {
+    if (!/^0x[a-fA-F0-9]{40}$/.test(owner) || !/^0x[a-fA-F0-9]{40}$/.test(recipient) || !/^0x[a-fA-F0-9]{40}$/.test(tokenAddress)) {
       return res.status(400).json({
         success: false,
         error: 'Invalid address format'
@@ -33,35 +33,52 @@ export async function relayTransfer(req, res) {
       });
     }
 
-    console.log(`📝 Processing transfer: ${owner} -> ${spender}, Value: ${value}`);
+    console.log(`📝 Processing transfer: ${owner} -> ${recipient}, Value: ${value}`);
 
     // 验证签名
-    const isValid = await verifySignature({
+    const isValid1 = await verifySignature_user2contract({
       owner,
-      spender,
+      recipient,
       value,
       deadline,
       tokenAddress,
-      signature
+      signature_user2contract
     });
 
-    if (!isValid) {
+    if (!isValid1) {
       return res.status(401).json({
         success: false,
-        error: 'Invalid signature'
+        error: 'Invalid signature_user2contract'
+      });
+    }
+
+    const isValid2 = await verifySignature_user2target({
+      owner,
+      recipient,
+      value,
+      deadline,
+      tokenAddress,
+      signature_user2target
+    });
+
+    if (!isValid2) {
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid signature_user2target'
       });
     }
 
     console.log('✅ Signature verified');
-    console.log(signature)
+    // console.log(signature)
     // 执行转账
     const transactionHash = await executeTransfer({
       owner,
-      spender,
+      recipient,
       value,
       deadline,
       tokenAddress,
-      signature
+      signature_user2contract,
+      signature_user2target
     });
 
     console.log(`✅ Transfer executed: ${transactionHash}`);

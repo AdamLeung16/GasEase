@@ -6,22 +6,18 @@ import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 
-/**
- * @title GaslessTransfer
- * @dev 支持通过EIP-2612 permit进行零Gas费转账的合约
- * 
- * 用户通过permit签名授权，中继器可以代付Gas执行转账
- */
 contract GaslessTransfer is EIP712 {
     using ECDSA for bytes32;
 
-    bytes32 public constant PERMIT_TYPEHASH = keccak256(
-        "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
+    bytes32 public constant TRANSFER_TYPEHASH = keccak256(
+        "Transfer(address owner,address recipient,uint256 value,uint256 nonce,uint256 deadline)"
     );
+
+    mapping(address => uint256) public nonces;
 
     event GaslessTransferExecuted(
         address indexed owner,
-        address indexed spender,
+        address indexed recipient,
         address indexed token,
         uint256 value,
         uint256 deadline
@@ -30,75 +26,78 @@ contract GaslessTransfer is EIP712 {
     constructor() EIP712("GaslessTransfer", "1") {}
 
     /**
-     * @dev 通过EIP-2612 permit执行转账
-     * @param token 代币合约地址（必须支持IERC20Permit）
-     * @param owner 代币所有者
-     * @param spender 被授权者（接收方）
-     * @param value 转账金额
-     * @param deadline 签名过期时间（Unix时间戳）
-     * @param v 签名v值
-     * @param r 签名r值  
-     * @param s 签名s值
+     * @dev 验证 owner 对 (recipient,value,nonce,deadline) 的签名（在本合约 domain 下）
      */
-    function executeGaslessTransfer(
-        address token,
+    function verifyTransferAuthorization(
         address owner,
-        address spender,
+        address recipient,
         uint256 value,
         uint256 deadline,
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external {
-        // 使用EIP-2612 permit进行授权
-        IERC20Permit(token).permit(owner, address(this), value, deadline, v, r, s);
-        
-        // 从owner转账到spender
-        bool success = IERC20(token).transferFrom(owner, spender, value);
-        require(success, "GaslessTransfer: transfer failed");
+    ) public view returns (bool) {
+        uint256 nonce = nonces[owner];
 
-        emit GaslessTransferExecuted(owner, spender, token, value, deadline);
+        bytes32 structHash = keccak256(
+            abi.encode(
+                TRANSFER_TYPEHASH,
+                owner,
+                recipient,
+                value,
+                nonce,
+                deadline
+            )
+        );
+
+        bytes32 hash = _hashTypedDataV4(structHash);
+        address signer = ECDSA.recover(hash, v, r, s);
+        return signer == owner;
     }
 
     /**
-     * @dev 批量permit转账
+     * @dev 执行 gasless 转账：
+     *  - 使用 token 的 permit 授权本合约 spender = address(this)
+     *  - 使用合约内的 transfer authorization (本合约 domain) 验证 recipient
      */
-    // function batchTransferWithPermit(
-    //     address token,
-    //     address[] memory owners,
-    //     address[] memory spenders,
-    //     uint256[] memory values,
-    //     uint256[] memory deadlines,
-    //     uint8[] memory vs,
-    //     bytes32[] memory rs,
-    //     bytes32[] memory ss
-    // ) external {
-    //     require(
-    //         owners.length == spenders.length &&
-    //         spenders.length == values.length &&
-    //         values.length == deadlines.length &&
-    //         deadlines.length == vs.length &&
-    //         vs.length == rs.length &&
-    //         rs.length == ss.length,
-    //         "GaslessTransfer: array length mismatch"
-    //     );
+    function executeGaslessTransfer(
+        address token,
+        address owner,
+        address recipient,
+        uint256 value,
+        uint256 deadline,
+        // permit signature (token domain)
+        uint8 v_u2c,
+        bytes32 r_u2c,
+        bytes32 s_u2c,
+        // transfer authorization signature (this contract domain)
+        uint8 v_u2t,
+        bytes32 r_u2t,
+        bytes32 s_u2t
+    ) external {
+        require(block.timestamp <= deadline, "GaslessTransfer: expired deadline");
 
-    //     for (uint256 i = 0; i < owners.length; i++) {
-    //         transferWithPermit(
-    //             token,
-    //             owners[i],
-    //             spenders[i],
-    //             values[i],
-    //             deadlines[i],
-    //             vs[i],
-    //             rs[i],
-    //             ss[i]
-    //         );
-    //     }
-    // }
+        // 验证 transfer authorization (this contract domain)
+        require(
+            verifyTransferAuthorization(owner, recipient, value, deadline, v_u2t, r_u2t, s_u2t),
+            "GaslessTransfer: invalid transfer authorization"
+        );
+
+        // 使用 token permit 授权本合约为 spender（token domain）
+        IERC20Permit(token).permit(owner, address(this), value, deadline, v_u2c, r_u2c, s_u2c);
+
+        // 执行转账
+        bool success = IERC20(token).transferFrom(owner, recipient, value);
+        require(success, "GaslessTransfer: transfer failed");
+
+        // 防重放：只在成功转账后增加合约 nonce
+        nonces[owner] += 1;
+
+        emit GaslessTransferExecuted(owner, recipient, token, value, deadline);
+    }
 
     /**
-     * @dev 获取域分隔符（用于EIP-712签名验证）
+     * @dev 获取合约 domain separator（调试用）
      */
     function DOMAIN_SEPARATOR() external view returns (bytes32) {
         return _domainSeparatorV4();
