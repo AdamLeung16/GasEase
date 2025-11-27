@@ -66,7 +66,7 @@ class ErrorBoundary extends React.Component {
 
 // 根组件渲染
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <ErrorBoundary>
       <WagmiProvider config={config}>
         <QueryClientProvider client={queryClient}>
@@ -74,5 +74,5 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         </QueryClientProvider>
       </WagmiProvider>
     </ErrorBoundary>
-  </React.StrictMode>,
+  // </React.StrictMode>,
 )

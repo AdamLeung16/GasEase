@@ -69,11 +69,11 @@ export function RelayerStatus() {
           <span className="detail-value detail-address">{data?.address?.slice(0, 10)}...</span>
         </div>
         <div className="detail-row">
-          <span className="detail-label">余额:</span>
+          <span className="detail-label">Balance:</span>
           <span className="detail-value">{data?.balance} ETH</span>
         </div>
         <div className="detail-row">
-          <span className="detail-label">已处理交易:</span>
+          <span className="detail-label">Transactions completed:</span>
           <span className="detail-value">{data?.transactionCount}</span>
         </div>
       </div>

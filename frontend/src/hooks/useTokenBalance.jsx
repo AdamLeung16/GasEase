@@ -16,12 +16,16 @@ const TOKEN_ADDRESSES = {
   }
 }
 
+// ETH 的特殊标识符
+const ETH_TOKEN_SYMBOL = 'ETH'
+
 export function useTokenBalance(tokenSymbol = 'USDC') {
   const { address, chain } = useAccount()
   const publicClient = usePublicClient()
   
   const [balance, setBalance] = useState(null)
-  const [decimals, setDecimals] = useState(6) // USDC 默认6位小数
+  const [decimals, setDecimals] = useState(18) // ETH 默认18位小数
+  const [symbol, setSymbol] = useState(tokenSymbol)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -36,29 +40,42 @@ export function useTokenBalance(tokenSymbol = 'USDC') {
       setError(null)
 
       try {
-        // 获取对应网络的代币地址
-        const chainId = chain.id
-        const tokenAddress = getTokenAddress(chainId, tokenSymbol)
-        
-        if (!tokenAddress) {
-          throw new Error(`网络 ${chain.name} 不支持 ${tokenSymbol}`)
+        // 如果是 ETH，直接查询原生余额
+        if (tokenSymbol.toUpperCase() === ETH_TOKEN_SYMBOL) {
+          const provider = new ethers.BrowserProvider(window.ethereum)
+          const balanceResult = await provider.getBalance(address)
+          
+          setBalance(balanceResult)
+          setDecimals(18) // ETH 使用 18 位小数
+          setSymbol('ETH')
+          
+          console.log(`ETH 余额查询成功: ${ethers.formatEther(balanceResult)} ETH`)
+        } else {
+          // ERC-20 代币逻辑
+          const chainId = chain.id
+          const tokenAddress = getTokenAddress(chainId, tokenSymbol)
+          
+          if (!tokenAddress) {
+            throw new Error(`网络 ${chain.name} 不支持 ${tokenSymbol}`)
+          }
+
+          // 创建合约实例
+          const provider = new ethers.BrowserProvider(window.ethereum)
+          const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, provider)
+
+          // 并行获取余额和小数位
+          const [balanceResult, decimalsResult, symbolResult] = await Promise.all([
+            tokenContract.balanceOf(address),
+            tokenContract.decimals(),
+            tokenContract.symbol()
+          ])
+
+          setBalance(balanceResult)
+          setDecimals(decimalsResult)
+          setSymbol(symbolResult)
+          
+          console.log(`余额查询成功: ${ethers.formatUnits(balanceResult, decimalsResult)} ${symbolResult}`)
         }
-
-        // 创建合约实例
-        const provider = new ethers.BrowserProvider(window.ethereum)
-        const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, provider)
-
-        // 并行获取余额和小数位
-        const [balanceResult, decimalsResult, symbolResult] = await Promise.all([
-          tokenContract.balanceOf(address),
-          tokenContract.decimals(),
-          tokenContract.symbol()
-        ])
-
-        setBalance(balanceResult)
-        setDecimals(decimalsResult)
-        
-        console.log(`余额查询成功: ${ethers.formatUnits(balanceResult, decimalsResult)} ${symbolResult}`)
 
       } catch (err) {
         console.error('获取余额失败:', err)
@@ -84,15 +101,20 @@ export function useTokenBalance(tokenSymbol = 'USDC') {
   }, [address, chain, tokenSymbol])
 
   // 获取格式化的余额
-  const formattedBalance = balance ? ethers.formatUnits(balance, decimals) : '0'
+  const formattedBalance = balance ? 
+    (tokenSymbol.toUpperCase() === ETH_TOKEN_SYMBOL ? 
+      ethers.formatEther(balance) : 
+      ethers.formatUnits(balance, decimals)
+    ) : '0'
 
   return {
     balance,
     formattedBalance,
     decimals,
+    symbol,
     isLoading,
     error,
-    isSupported: !!getTokenAddress(chain?.id, tokenSymbol)
+    isSupported: tokenSymbol.toUpperCase() === ETH_TOKEN_SYMBOL ? true : !!getTokenAddress(chain?.id, tokenSymbol)
   }
 }
 

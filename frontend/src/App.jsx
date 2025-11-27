@@ -65,8 +65,8 @@ function App() {
               {/* 左侧主功能区 */}
               <div className="main-section">
                 <TransferForm />
-                
-                {/* 使用说明 */}
+                <TransactionHistory />
+                {/* 使用说明
                 <div className="instruction-card">
                   <h3 className="instruction-title">How to use?</h3>
                   <div className="instruction-steps">
@@ -87,14 +87,14 @@ function App() {
                       <p>中继器将您的交易提交上链，赞助商支付 Gas 费用</p>
                     </div>
                   </div>
-                </div>
+                </div> */}
               </div>
 
               {/* 右侧边栏 */}
               <div className="sidebar-section">
                 <TokenBalances />
                 <RelayerStatus />
-                <TransactionHistory />
+                {/* <TransactionHistory /> */}
               </div>
             </div>
           </div>

@@ -9,6 +9,7 @@ export function TokenBalances() {
   
   // 查询多种代币余额
   const usdc = useTokenBalance('USDC')
+  const eth = useTokenBalance('ETH')
 
   if (!address) {
     return (
@@ -30,8 +31,8 @@ export function TokenBalances() {
         <div className="network-unsupported">
           <AlertCircle className="network-unsupported-icon" />
           <div>
-            <div className="network-unsupported-title">不支持的网络</div>
-            <div className="network-unsupported-subtitle">请在 Sepolia 测试网使用</div>
+            <div className="network-unsupported-title">Unsupported network</div>
+            <div className="network-unsupported-subtitle">Please use in Sepolia Testnet</div>
           </div>
         </div>
       </div>
@@ -47,7 +48,7 @@ export function TokenBalances() {
         <div className="token-info">
           <div className="token-symbol">{symbol}</div>
           <div className="token-label">
-            {balanceHook.isLoading ? '查询中...' : '余额'}
+            {balanceHook.isLoading ? 'Searching...' : 'Balance'}
           </div>
         </div>
       </div>
@@ -72,7 +73,7 @@ export function TokenBalances() {
   return (
     <div className="token-balances-container">
       <div className="balance-header">
-        <h3 className="balance-title">我的余额</h3>
+        <h3 className="balance-title">My Balance</h3>
         <div className="network-indicator">
           <div className="network-dot"></div>
           {chain?.name || '未知网络'}
@@ -85,13 +86,25 @@ export function TokenBalances() {
           balanceHook={usdc} 
           isPrimary={true}
         />
-        
+        <TokenBalanceItem 
+          symbol="ETH" 
+          balanceHook={eth} 
+          isPrimary={true}
+        />
       </div>
 
       {/* 网络提示 */}
       <div className="network-tip">
         <div className="tip-text">
-          💡 提示: 在测试网使用，USDC 为测试代币
+          💡 Tips: You can get test USDC from {''}
+          <a 
+            href="https://faucet.circle.com/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="tip-link"
+          >
+            Circle Faucet
+          </a>.
         </div>
       </div>
     </div>

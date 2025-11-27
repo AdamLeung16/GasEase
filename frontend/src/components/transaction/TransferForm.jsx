@@ -71,7 +71,7 @@ export function TransferForm() {
           <Zap className="transfer-icon" />
         </div>
         <div>
-          <h2 className="transfer-title">Gasless transfer</h2>
+          <h2 className="transfer-title">Gasless Transfer</h2>
           {/* <p className="transfer-subtitle">零 Gas 费体验，赞助商为您支付费用</p> */}
         </div>
       </div>
@@ -137,8 +137,8 @@ export function TransferForm() {
 
         {/* 成功提示 */}
         {lastTransaction?.status === 'success' && (
-          <Alert type="success" title="交易成功">
-            交易已确认！哈希: 
+          <Alert type="success" title="Transfer succeeded">
+            Transfer is confirmed! Hash: 
             <a 
               href={`${chain?.blockExplorers?.default?.url}/tx/${lastTransaction.hash}`}
               target="_blank"
